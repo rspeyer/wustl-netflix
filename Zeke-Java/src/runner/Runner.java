@@ -68,14 +68,24 @@ public class Runner {
 		
 		//Create our predictor
 		KNN knn = new KNN();
-		knn.NormalizeZeke(neighborData);
+		knn.NormalizeKorBell(neighborData);
 		
 		//Do all the predictions
 		for (Movie movie : unKnownData.getMovies().values()){
 			for (Rating unKnownRating : movie.getRatings().values()) {
 				predTimeStart=System.currentTimeMillis();
+				//Add in the user and movie averages
+				double avgMovieRating = neighborData.getMovies().get(unKnownRating.getMovie().getMovieId()).getAvg() + knn.overallAvg;
 				
-				pred = knn.predict(unKnownRating, neighborData);
+				//XXX: this can be removed if we are predicting over the entire probe and training sets
+				if (!neighborData.getUsers().containsKey(unKnownRating.getUser().getUserId())) {
+					pred = avgMovieRating;
+				} else {
+					double avgUserRating = neighborData.getUsers().get(unKnownRating.getUser().getUserId()).getAvg() + knn.overallAvg;
+					//pred = .4*knn.predict(unKnownRating, neighborData) + .4*avgMovieRating + .2*avgUserRating;
+					pred = knn.predict(unKnownRating, neighborData);
+					log.info("VOTE:\t" + unKnownRating.getRating() + "\t" + pred + "\t" + avgMovieRating + "\t" + avgUserRating + "\t" + knn.overallAvg);
+				}
 				sumSqError += Math.pow(pred - unKnownRating.getRating(), 2);
 				predsMade++;
 				fw.write(unKnownRating.getUser().getUserId() + "\t" + unKnownRating.getMovie().getMovieId() + "\t" + unKnownRating.getRating() + "\t" + pred + "\t" + (pred - unKnownRating.getRating()) + "\n");

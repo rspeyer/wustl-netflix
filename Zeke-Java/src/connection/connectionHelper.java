@@ -48,6 +48,7 @@ public final class connectionHelper {
 		PreparedStatement ps;
 		if (getKnownData)
 			ps = conn.prepareStatement( "select users.user, users.movie, users.rating, users.date from users left outer join probe on users.user = probe.user and users.movie = probe.movie inner join (select movie as mov from users group by mov order by count(*) desc limit ?) as less_movie on less_movie.mov = users.movie where probe.user is null;");
+
 		else
 			ps = conn.prepareStatement( "select users.user, users.movie, users.rating, users.date from users inner join probe on users.user = probe.user and users.movie = probe.movie and users.movie in ( 11064, 16377, 16242 )");
 			//ps = conn.prepareStatement( "select users.user, users.movie, users.rating, users.date from users inner join probe on users.user = probe.user and users.movie = probe.movie inner join (select movie as mov from users group by mov order by count(*) desc limit ?) as less_movie on less_movie.mov = users.movie;");
