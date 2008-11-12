@@ -14,80 +14,6 @@ public abstract class Prediction {
 	public double overallAvg;
 	static Logger log = Logger.getLogger("Prediction");
 	
-	/**
-	 * This is a really simple normalization for now
-	 * Just subtract the user acg from the rating
-	 * 
-	 * @param data
-	 */
-	public void Normalize(Struct data) {
-		getAllAvgs(data);//lame!
-		
-		double rate;
-		for (Movie movie : data.getMovies().values()) {
-			for (Rating rating : movie.getRatings().values()) {
-				rate = rating.getRating();
-				rating.setRating((rate-movie.getAvg())+(rate - rating.getUser().getAvg()));
-			}
-		}
-	}
-	
-	protected double unNormalize(Rating rating) {
-		return (rating.getRating() + rating.getMovie().getAvg() + rating.getUser().getAvg())/2;
-	}
-
-	/**
-	 * We remove the large effects by iterating over
-	 * 1. All movies avg
-	 * 2. Movie avg
-	 * 3. User avg
-	 * 
-	 * with the formula:
-	 * Rnew = Rold - effect
-	 * 
-	 * @param data
-	 */
-	public void NormalizeZeke(Struct data) {
-	
-		double amount=0.0;
-		overallAvg = 0.0;
-		for (Movie movie : data.getMovies().values()) {
-			for (Rating rating : movie.getRatings().values()) {
-				overallAvg += rating.getRating();
-				amount++;
-			}
-		}
-		
-		overallAvg /= amount;
-		
-		for (Movie movie : data.getMovies().values()) {
-			for (Rating rating : movie.getRatings().values()) {
-				rating.setRating(rating.getRating()-overallAvg);
-			}
-		}
-		log.debug("Normalized for Global Avg!");
-		getMovieAvgs(data);
-		
-		for (Movie movie : data.getMovies().values()) {
-			for (Rating rating : movie.getRatings().values()) {
-				rating.setRating(rating.getRating()-movie.getAvg());
-			}
-		}
-		log.debug("Normalized for Movie Avg!");
-		getUserAvgs(data);
-		
-		for (User user : data.getUsers().values()) {
-			for (Rating rating : user.getRatings().values()) {
-				rating.setRating(rating.getRating()-user.getAvg());
-			}
-		}
-		log.debug("Normalized for User Avg!");
-	}
-	
-	protected double unNormalizeZeke(Rating rating) {
-		return (rating.getRating() + rating.getMovie().getAvg() + rating.getUser().getAvg() + this.overallAvg);
-	}
-	
 	public void NormalizeKorBell(Struct data) {
 //		TODO Implement the actual regression aspect as a method and call for the other effects such as time
 		//Get the Overall Avg for all movies and all users
@@ -157,17 +83,6 @@ public abstract class Prediction {
 		return (rating.getRating() + rating.getMovie().getAvg() + rating.getUser().getAvg() + rating.getUserTimeDelay());
 	}
 	
-	/**
-	 * Really lame, but I need all the averages and variances 
-	 * calculated before normalizing the individual ratings
-	 * 
-	 * @param data
-	 */
-	private void getAllAvgs(Struct data) {
-		getMovieAvgs(data);
-		getUserAvgs(data);
-	}
-
 	private void getUserAvgs(Struct data) {
 		for (User user : data.getUsers().values())
 			user.getVariance();

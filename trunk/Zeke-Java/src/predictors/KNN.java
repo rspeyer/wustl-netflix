@@ -17,38 +17,25 @@ import connection.Struct;
 
 public class KNN extends Prediction {
 	
-	private final double MAX_AVG = 5.0;
-	private final double MAX_VAR = 3.0;
-	private final double MAX_NUM_USER_RATING = 17653.0;
-	private final double MAX_NUM_MOVIE_RATING = 232934.0;
-	private final double INTERSECTION_WEIGHT = 1.0;
 	private final int NUM_NEIGHBORS = 45;
 	static Logger log = Logger.getLogger("KNN");
 
 	public double predict(Rating unKnownRating, Struct trainingData) {
-		double totalWeight = 0, weight = 0, predRating=0, avgMovieRating=0, avgUserRating=0;
-		//log.debug("Unknown Rating: " + unKnownRating);
-		//Add in the user and movie averages
-		avgMovieRating += trainingData.getMovies().get(unKnownRating.getMovie().getMovieId()).getAvg();
-		
-		//XXX: this can be removed if we are predicting over the entire probe and training sets
-		if (!trainingData.getUsers().containsKey(unKnownRating.getUser().getUserId()))
-			return avgMovieRating + this.overallAvg;
-		
-		avgUserRating += trainingData.getUsers().get(unKnownRating.getUser().getUserId()).getAvg();
-		
+		double totalWeight = 0, weight = 0, predRating=0;
+
 		PriorityQueue<Neighbor> neighbors = getNearestNeighbors(unKnownRating, trainingData);
 
 		//TODO: Weighting: Num people who saw both/num people who saw smaller
 		for (Neighbor neighbor : neighbors) {
-			weight = 1/neighbor.distance;
+			weight = 1.0/neighbor.distance;
 			totalWeight += weight;
-			predRating += unNormalizeZeke(neighbor.rating) * weight;
+			predRating += unNormalizeKorBell(neighbor.rating) * weight;
 		}
-		return (.4*(predRating/totalWeight) + .4*avgMovieRating + .2*avgUserRating);
+		return (predRating/totalWeight);
 	}
 
 	private PriorityQueue<Neighbor> getNearestNeighbors(Rating unKnownRating, Struct trainingData) {
+
 		PriorityQueue<Neighbor> neighbors = new PriorityQueue<Neighbor>(NUM_NEIGHBORS, new Comparator<Neighbor>() {
 			public int compare(Neighbor neighbor0, Neighbor neighbor1) {
 				/* Note: These are inversed from a normal comparator to make it easier
@@ -79,7 +66,6 @@ public class KNN extends Prediction {
 
 		//Getting a group of similar movies
 		//TODO: Reduce Time constraints: Currently 2.0 seconds to compute
-		long start= System.currentTimeMillis();
 		double largestDist=0.0;
 		for (Rating rating : unknownUser.getRatings().values()) {
 			Movie knownMovie = rating.getMovie();
@@ -112,8 +98,6 @@ public class KNN extends Prediction {
 					neighborPeople.poll();
 			}
 		}
-		log.debug("Potential Neighbor Time: " +  (System.currentTimeMillis() - start));
-		start= System.currentTimeMillis();
 		//Now with our Similar Users and Movies let's find similar ratings!
 		//TODO: Reduce Time constraints: Currently 5.3 seconds to compute!
 		largestDist=0.0;
@@ -122,6 +106,7 @@ public class KNN extends Prediction {
 			for (NeighborPeople similarPeople : neighborPeople) {
 				if (similarMovie.movie.getRatings().containsKey(similarPeople.user.getUserId())){
 					neighborDistances = intersectSimilarity(similarMovie, similarPeople, unknownMovie, unknownUser);
+
 					if (largestDist > neighborDistances || neighbors.size()<NUM_NEIGHBORS) {
 						neighbors.offer(new Neighbor(similarMovie.movie.getRatings().get(similarPeople.user.getUserId()), neighborDistances));
 						if (largestDist < neighborDistances)
@@ -132,7 +117,6 @@ public class KNN extends Prediction {
 				}
 			}
 		}
-		log.debug("Actual Neighbor Time: " +  (System.currentTimeMillis() - start));
 		return neighbors;
 	}
 	
@@ -189,20 +173,11 @@ public class KNN extends Prediction {
 	 * @return
 	 */
 	private double movieDistance (Movie movieToRate, Movie neighborMovie, Set<Integer> intersectingUsers){
-		double distance = 0.0;
-		//TODO: Implement a distance calculation between the two sets of ratings (correlation of some sort)
-//		distance += Math.pow(movieToRate.getAvg()/MAX_AVG - neighborMovie.getAvg()/MAX_AVG, 2.0);
-//		distance += Math.pow(movieToRate.getVariance()/MAX_VAR - neighborMovie.getVariance()/MAX_VAR, 2.0);
-//		distance += Math.pow((((double)movieToRate.getRatings().size())/MAX_NUM_MOVIE_RATING) - (((double)neighborMovie.getRatings().size())/MAX_NUM_MOVIE_RATING), 2.0);
-		
 		//Get any user that rated either movie
 		int unionSize= intersectingUsers.size();
 		intersectingUsers.retainAll(movieToRate.getRatings().keySet());
 		intersectingUsers.retainAll(neighborMovie.getRatings().keySet());
-		//XXX: Tune this parameter (how much to weight the intersection size)
-		distance += INTERSECTION_WEIGHT*Math.pow(1.0-((double)intersectingUsers.size()/(double)unionSize), 2.0);
-		
-		return distance;
+		return Math.pow(1.0-((double)intersectingUsers.size()/(double)unionSize), 2.0);
 	}
 	
 	/**
@@ -213,20 +188,11 @@ public class KNN extends Prediction {
 	 * @return
 	 */
 	private double userDistance (User userToRate, User userNeighbor, Set<Integer>intersectingMovies){
-		double distance = 0.0;
-		//TODO: Implement a distance calcualtion between the two sets of ratings (coorelation of some sort)
-//		distance += Math.pow(userToRate.getAvg()/MAX_AVG - userNeighbor.getAvg()/MAX_AVG, 2.0);
-//		distance += Math.pow(userToRate.getVariance()/MAX_VAR - userNeighbor.getVariance()/MAX_VAR, 2.0);
-//		distance += Math.pow(userToRate.getRatings().size()/MAX_NUM_USER_RATING - userNeighbor.getRatings().size()/MAX_NUM_USER_RATING, 2.0);
-		
 		//Get any movie rated by either user
 		int unionSize=intersectingMovies.size();
 		intersectingMovies.retainAll(userToRate.getRatings().keySet());
 		intersectingMovies.retainAll(userNeighbor.getRatings().keySet());
-		//XXX: Tune this parameter (how much to weight the intersection size)
-		distance += INTERSECTION_WEIGHT*Math.pow(1.0-((double)intersectingMovies.size()/(double)unionSize), 2.0);
-		
-		return distance;
+		return Math.pow(1.0-((double)intersectingMovies.size()/(double)unionSize), 2.0);
 	}
 
 	class Neighbor {
