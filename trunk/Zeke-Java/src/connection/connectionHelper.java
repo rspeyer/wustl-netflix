@@ -49,13 +49,15 @@ public final class connectionHelper {
 		if (getKnownData)
 			ps = conn.prepareStatement( "select users.user, users.movie, users.rating, users.date from users left outer join probe on users.user = probe.user and users.movie = probe.movie inner join (select movie as mov from users group by mov order by count(*) desc limit ?) as less_movie on less_movie.mov = users.movie where probe.user is null;");
 		else
-			ps = conn.prepareStatement( "select users.user, users.movie, users.rating, users.date from users inner join probe on users.user = probe.user and users.movie = probe.movie inner join (select movie as mov from users group by mov order by count(*) desc limit ?) as less_movie on less_movie.mov = users.movie;");
+			ps = conn.prepareStatement( "select users.user, users.movie, users.rating, users.date from users inner join probe on users.user = probe.user and users.movie = probe.movie and users.movie in ( 11064, 16377, 16242 )");
+			//ps = conn.prepareStatement( "select users.user, users.movie, users.rating, users.date from users inner join probe on users.user = probe.user and users.movie = probe.movie inner join (select movie as mov from users group by mov order by count(*) desc limit ?) as less_movie on less_movie.mov = users.movie;");
 		Struct retStruct = new Struct();
 		Map<Integer,User> users= new HashMap<Integer,User>();
 		Map<Integer,Movie> movies= new HashMap<Integer,Movie>();
 		ps.setFetchSize(FETCH_SIZE);
 		try {
-		    ps.setInt(1, limit);
+		    if (getKnownData) 
+		    	ps.setInt(1, limit);
 		    long startTime = System.currentTimeMillis();
 		    log.debug("Attempting to Execute Query");
 		    ResultSet rs = ps.executeQuery();

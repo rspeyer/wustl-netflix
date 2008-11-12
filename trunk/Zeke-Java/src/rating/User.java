@@ -17,7 +17,7 @@ public class User {
 	public User(int userId) {
 		this.userId = userId;
 		this.ratings = new HashMap<Integer,Rating>();
-		avg = 0.0;
+		avg = -10.0;
 		variance = -10.0;
 	}
 	
@@ -25,6 +25,9 @@ public class User {
 	private Map<Integer,Rating> ratings;
 	private double avg;
 	private double variance;
+	
+	//Norm Variables
+	private double avgTimeDelay;
 	
 	public double getVariance() {
 		if (variance != -10.0)
@@ -42,17 +45,17 @@ public class User {
 	}
 
 	public double getAvg() {
-		if (avg != 0.0)
+		if (avg != -10.0)
 			return avg;
 		else
 			avg = calcAvg();
 		return avg;
 	}
 	private double calcAvg() {
-		int sum=0;
+		double sum=0;
 		for (Rating rating : ratings.values())
 			sum += rating.getRating();
-		return (double)sum/(double)ratings.size();
+		return sum/(double)ratings.size();
 	}
 	
 	public Map<Integer,Rating> getRatings() {
@@ -93,5 +96,22 @@ public class User {
 		int hash = 1;
 		hash = PRIME * hash + this.getUserId();
 		return hash;
+	}
+
+	public double getAvgTimeDelay() {
+		return avgTimeDelay;
+	}
+
+	public void setAvgTimeDelay(double avgTimeDelay) {
+		this.avgTimeDelay = avgTimeDelay;
+	}
+
+	public Rating getEarliestRating() {
+		Rating earliestRating = null;
+		for (Rating rating : getRatings().values()) {
+			if (earliestRating == null || earliestRating.getDate() > rating.getDate())
+				earliestRating = rating;
+		}
+		return earliestRating;
 	}
 }
