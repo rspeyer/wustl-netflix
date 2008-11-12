@@ -68,7 +68,7 @@ public class Runner {
 		
 		//Create our predictor
 		KNN knn = new KNN();
-		knn.Normalize(neighborData);
+		knn.NormalizeZeke(neighborData);
 		
 		//Do all the predictions
 		for (Movie movie : unKnownData.getMovies().values()){

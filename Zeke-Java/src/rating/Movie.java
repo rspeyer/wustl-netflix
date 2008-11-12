@@ -17,7 +17,7 @@ public class Movie {
 	public Movie(int movieId) {
 		this.movieId = movieId;
 		this.ratings = new HashMap<Integer,Rating>();
-		this.avg = 0.0;
+		this.avg = -10.0;
 		this.variance = -10.0;
 	} 
 	
@@ -26,6 +26,17 @@ public class Movie {
 	private double avg;
 	private double variance;
 	
+	//Norm Variables
+	private double avgTimeDelay;
+	
+	public double getAvgTimeDelay() {
+		return avgTimeDelay;
+	}
+
+	public void setAvgTimeDelay(double avgTimeDelay) {
+		this.avgTimeDelay = avgTimeDelay;
+	}
+
 	public double getVariance() {
 		if (variance != -10.0)
 			return variance;
@@ -42,17 +53,17 @@ public class Movie {
 	}
 
 	public double getAvg() {
-		if (avg != 0.0)
+		if (avg != -10.0)
 			return avg;
 		else
 			avg = calcAvg();
 		return avg;
 	}
 	private double calcAvg() {
-		int sum=0;
+		double sum=0;
 		for (Rating rating : ratings.values())
 			sum += rating.getRating();
-		return (double)sum/(double)ratings.size();
+		return sum/(double)ratings.size();
 	}
 
 	public int getMovieId() {

@@ -23,6 +23,18 @@ public class Rating {
 	private double rating;
 
 	private int date;
+	
+	//Norm Variables
+	private double userTimeDelay;
+	private double movieTimeDelay;
+	
+	public double getUserTimeDelay() {
+		return userTimeDelay;
+	}
+
+	public void setUserTimeDelay(double userTimeDelay) {
+		this.userTimeDelay = userTimeDelay;
+	}
 
 	public int getDate() {
 		return date;
@@ -85,5 +97,13 @@ public class Rating {
 		hash = PRIME * hash + this.getUser().hashCode();
 		hash = PRIME * hash + this.getMovie().hashCode();
 		return hash;
+	}
+
+	public double getMovieTimeDelay() {
+		return movieTimeDelay;
+	}
+
+	public void setMovieTimeDelay(double movieTimeDelay) {
+		this.movieTimeDelay = movieTimeDelay;
 	}
 }
