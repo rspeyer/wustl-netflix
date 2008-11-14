@@ -19,6 +19,7 @@ public class Movie {
 		this.ratings = new HashMap<Integer,Rating>();
 		this.avg = -10.0;
 		this.variance = -10.0;
+		this.earliestRating = null;
 	} 
 	
 	private int movieId;
@@ -27,14 +28,22 @@ public class Movie {
 	private double variance;
 	
 	//Norm Variables
-	private double avgTimeDelay;
+	private double avgTimeDelayUser;
+	private double avgTimeDelayMovie;
+	private Rating earliestRating;
 	
-	public double getAvgTimeDelay() {
-		return avgTimeDelay;
+	public double getAvgTimeDelay(boolean user) {
+		if (user)
+			return avgTimeDelayUser;
+		else
+			return avgTimeDelayMovie;
 	}
 
-	public void setAvgTimeDelay(double avgTimeDelay) {
-		this.avgTimeDelay = avgTimeDelay;
+	public void setAvgTimeDelay(double avgTimeDelay, boolean user) {
+		if (user)
+			this.avgTimeDelayUser = avgTimeDelay;
+		else
+			this.avgTimeDelayMovie = avgTimeDelay;
 	}
 
 	public double getVariance() {
@@ -77,6 +86,16 @@ public class Movie {
 	}
 	public void setRatings(Map<Integer,Rating> ratings) {
 		this.ratings = ratings;
+	}
+	
+	public Rating getEarliestRating() {
+		if (earliestRating != null)
+			return earliestRating;
+		for (Rating rating : getRatings().values()) {
+			if (earliestRating == null || earliestRating.getDate() > rating.getDate())
+				earliestRating = rating;
+		}
+		return earliestRating;
 	}
 
 	@Override

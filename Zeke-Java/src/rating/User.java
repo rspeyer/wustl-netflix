@@ -19,6 +19,7 @@ public class User {
 		this.ratings = new HashMap<Integer,Rating>();
 		avg = -10.0;
 		variance = -10.0;
+		earliestRating = null;
 	}
 	
 	private int userId;
@@ -27,8 +28,10 @@ public class User {
 	private double variance;
 	
 	//Norm Variables
-	private double avgTimeDelay;
-	
+	private double avgTimeDelayUser;
+	private double avgTimeDelayMovie;
+	private Rating earliestRating;
+
 	public double getVariance() {
 		if (variance != -10.0)
 			return variance;
@@ -97,17 +100,24 @@ public class User {
 		hash = PRIME * hash + this.getUserId();
 		return hash;
 	}
-
-	public double getAvgTimeDelay() {
-		return avgTimeDelay;
+	
+	public double getAvgTimeDelay(boolean user) {
+		if (user)
+			return avgTimeDelayUser;
+		else
+			return avgTimeDelayMovie;
 	}
 
-	public void setAvgTimeDelay(double avgTimeDelay) {
-		this.avgTimeDelay = avgTimeDelay;
+	public void setAvgTimeDelay(double avgTimeDelay, boolean user) {
+		if (user)
+			this.avgTimeDelayUser = avgTimeDelay;
+		else
+			this.avgTimeDelayMovie = avgTimeDelay;
 	}
 
 	public Rating getEarliestRating() {
-		Rating earliestRating = null;
+		if (earliestRating != null)
+			return earliestRating;
 		for (Rating rating : getRatings().values()) {
 			if (earliestRating == null || earliestRating.getDate() > rating.getDate())
 				earliestRating = rating;
