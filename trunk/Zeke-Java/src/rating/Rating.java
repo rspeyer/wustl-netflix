@@ -25,15 +25,37 @@ public class Rating {
 	private int date;
 	
 	//Norm Variables
-	private double userTimeDelay;
-	private double movieTimeDelay;
+	private double userTimeDelayUser;
+	private double userTimeDelayMovie;
+	private double movieTimeDelayUser;
+	private double movieTimeDelayMovie;
 	
-	public double getUserTimeDelay() {
-		return userTimeDelay;
+	public double getUserTimeDelay(boolean user) {
+		if (user)
+			return userTimeDelayUser;
+		else
+			return userTimeDelayMovie;
 	}
 
-	public void setUserTimeDelay(double userTimeDelay) {
-		this.userTimeDelay = userTimeDelay;
+	public void setUserTimeDelay(double userTimeDelay, boolean user) {
+		if (user)
+			this.userTimeDelayUser = userTimeDelay;
+		else
+			this.userTimeDelayMovie = userTimeDelay;
+	}
+	
+	public double getMovieTimeDelay(boolean user) {
+		if (user)
+			return movieTimeDelayUser;
+		else
+			return movieTimeDelayMovie;
+	}
+
+	public void setMovieTimeDelay(double movieTimeDelay, boolean user) {
+		if (user)
+			this.movieTimeDelayUser = movieTimeDelay;
+		else
+			this.movieTimeDelayMovie = movieTimeDelay;
 	}
 
 	public int getDate() {
@@ -97,13 +119,5 @@ public class Rating {
 		hash = PRIME * hash + this.getUser().hashCode();
 		hash = PRIME * hash + this.getMovie().hashCode();
 		return hash;
-	}
-
-	public double getMovieTimeDelay() {
-		return movieTimeDelay;
-	}
-
-	public void setMovieTimeDelay(double movieTimeDelay) {
-		this.movieTimeDelay = movieTimeDelay;
 	}
 }
