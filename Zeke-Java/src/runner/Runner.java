@@ -68,7 +68,9 @@ public class Runner {
 		
 		//Create our predictor
 		KNN knn = new KNN();
+		long startNorm = System.currentTimeMillis();
 		knn.NormalizeKorBell(neighborData);
+		log.info("Normalize Time(seconds): " + (System.currentTimeMillis()- startNorm)/1000);
 		
 		//Do all the predictions
 		for (Movie movie : unKnownData.getMovies().values()){
@@ -81,7 +83,7 @@ public class Runner {
 				if (!neighborData.getUsers().containsKey(unKnownRating.getUser().getUserId())) {
 					pred = avgMovieRating;
 				} else {
-					double avgUserRating = neighborData.getUsers().get(unKnownRating.getUser().getUserId()).getAvg() + knn.overallAvg;
+					double avgUserRating = neighborData.getUsers().get(unKnownRating.getUser().getUserId()).getAvg() + avgMovieRating;
 					//pred = .4*knn.predict(unKnownRating, neighborData) + .4*avgMovieRating + .2*avgUserRating;
 					pred = knn.predict(unKnownRating, neighborData);
 					log.info("VOTE:\t" + unKnownRating.getRating() + "\t" + pred + "\t" + avgMovieRating + "\t" + avgUserRating + "\t" + knn.overallAvg);

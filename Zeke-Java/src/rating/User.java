@@ -20,6 +20,7 @@ public class User {
 		avg = -10.0;
 		variance = -10.0;
 		earliestRating = null;
+		avgMovieByUser = -10.0;
 	}
 	
 	private int userId;
@@ -31,6 +32,9 @@ public class User {
 	private double avgTimeDelayUser;
 	private double avgTimeDelayMovie;
 	private Rating earliestRating;
+	private double avgMoviePopAvg;
+	private double avgMoviePopSupport;
+	private double avgMovieByUser;
 
 	public double getVariance() {
 		if (variance != -10.0)
@@ -54,6 +58,15 @@ public class User {
 			avg = calcAvg();
 		return avg;
 	}
+	
+	public double getAvgNorm() {
+		if (avgMovieByUser != -10.0)
+			return avgMovieByUser;
+		else
+			avgMovieByUser = calcAvg();
+		return avgMovieByUser;
+	}
+	
 	private double calcAvg() {
 		double sum=0;
 		for (Rating rating : ratings.values())
@@ -113,6 +126,20 @@ public class User {
 			this.avgTimeDelayUser = avgTimeDelay;
 		else
 			this.avgTimeDelayMovie = avgTimeDelay;
+	}
+	
+	public double getAvgMoviePop(boolean avg) {
+		if (avg)
+			return avgMoviePopAvg;
+		else
+			return avgMoviePopSupport;
+	}
+
+	public void setAvgMoviePop(double avgMoviePop, boolean avg) {
+		if (avg)
+			this.avgMoviePopAvg = avgMoviePop;
+		else
+			this.avgMoviePopSupport = avgMoviePop;
 	}
 
 	public Rating getEarliestRating() {

@@ -95,17 +95,99 @@ public abstract class Prediction {
 		 * the users Hard to give a good intuition for what this is doing ,but
 		 * Korbell seems to think it has an impact
 		 */
-
+		movieByUserNorm(data, true);
 		/*
 		 * MoviexUser(support): Regress the ratings of each movie on the support
 		 * of the users Hard to give a good intuition for what this is doing
 		 * ,but Korbell seems to think it has an impact
 		 */
+		movieByUserNorm(data, false);
+	}
 
+	private void movieByUserNorm(Struct data, boolean useAverage) {
+		double movieUserAvg = 0.0, userAvg = 0.0;
+		for (Movie movie : data.getMovies().values()) {
+			for (Rating rating : movie.getRatings().values()) {
+				if (useAverage) {
+					userAvg = rating.getUser().getAvgNorm();
+				} else {
+					userAvg = (double) rating.getUser().getRatings().size();
+				}
+				rating.setMovieUserPop(userAvg, useAverage);
+				movieUserAvg += rating.getMovieUserPop(useAverage);
+			}
+			movie.setAvgUserPop(movieUserAvg / (double) movie.getRatings().size(), useAverage);
+
+			for (Rating rating : movie.getRatings().values()) {
+				rating.setMovieUserPop(rating
+						.getMovieUserPop(useAverage)
+						- movie.getAvgUserPop(useAverage),
+						useAverage);
+			}
+		}
+		double theta = 0.0, numerator = 0.0, denomenator = 0.0;
+		for (Movie movie : data.getMovies().values()) {
+			theta = 0.0;
+			numerator = 0.0;
+			denomenator = 0.0;
+			for (Rating rating : movie.getRatings().values()) {
+				numerator += rating.getRating()
+						* rating.getMovieUserPop(useAverage);
+				denomenator += rating.getMovieUserPop(useAverage)
+						* rating.getMovieUserPop(useAverage);
+			}
+			theta = numerator / denomenator;
+			for (Rating rating : movie.getRatings().values()) {
+				rating.setMovieUserPop(theta
+						* rating.getMovieUserPop(useAverage),
+						useAverage);
+				rating.setRating(rating.getRating()
+						- rating.getMovieUserPop(useAverage));
+			}
+		}
 	}
 
 	private void userByMovieNorm(Struct data, boolean useAverage) {
-		
+		double userMovieAvg = 0.0, movieAvg = 0.0;
+		for (User user : data.getUsers().values()) {
+			for (Rating rating : user.getRatings().values()) {
+				if (useAverage) {
+					movieAvg = rating.getMovie().getAvgNorm();
+				} else {
+					movieAvg = (double) rating.getMovie().getRatings().size();
+				}
+				rating.setUserMoviePop(movieAvg, useAverage);
+				userMovieAvg += rating.getUserMoviePop(useAverage);
+			}
+			user.setAvgMoviePop(userMovieAvg / (double) user.getRatings().size(), useAverage);
+
+			for (Rating rating : user.getRatings().values()) {
+				rating.setUserMoviePop(rating
+						.getUserMoviePop(useAverage)
+						- user.getAvgMoviePop(useAverage),
+						useAverage);
+			}
+		}
+		double theta = 0.0, numerator = 0.0, denomenator = 0.0;
+		for (User user : data.getUsers().values()) {
+			theta = 0.0;
+			numerator = 0.0;
+			denomenator = 0.0;
+			for (Rating rating : user.getRatings().values()) {
+				numerator += rating.getRating()
+						* rating.getUserMoviePop(useAverage);
+				denomenator += rating.getUserMoviePop(useAverage)
+						* rating.getUserMoviePop(useAverage);
+			}
+			theta = numerator / denomenator;
+			for (Rating rating : user.getRatings().values()) {
+				rating.setUserMoviePop(theta
+						* rating.getUserMoviePop(useAverage),
+						useAverage);
+				rating.setRating(rating.getRating()
+						- rating.getUserMoviePop(useAverage));
+			}
+		}
 	}
 
 	private void movieByTimeNorm(Struct data, boolean userEarliestRating) {
@@ -202,11 +284,18 @@ public abstract class Prediction {
 	}
 
 	protected double unNormalizeKorBell(Rating rating) {
-		return (rating.getRating() + rating.getMovie().getAvg()
-				+ rating.getUser().getAvg() + rating.getUserTimeDelay(true)
+		return (this.overallAvg
+				+ rating.getRating() 
+				+ rating.getMovie().getAvg()
+				+ rating.getUser().getAvg() 
+				+ rating.getUserTimeDelay(true)
 				+ rating.getUserTimeDelay(false)
-				+ rating.getMovieTimeDelay(true) + rating
-				.getMovieTimeDelay(false));
+				+ rating.getMovieTimeDelay(true) 
+				+ rating.getMovieTimeDelay(false)
+				+ rating.getUserMoviePop(true)
+				+ rating.getUserMoviePop(false)
+				+ rating.getMovieUserPop(true)
+				+ rating.getMovieUserPop(false));
 	}
 
 	private void getUserAvgs(Struct data) {

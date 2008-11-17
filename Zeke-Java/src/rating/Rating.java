@@ -29,6 +29,38 @@ public class Rating {
 	private double userTimeDelayMovie;
 	private double movieTimeDelayUser;
 	private double movieTimeDelayMovie;
+	private double userMoviePopAvg;
+	private double userMoviePopSupport;
+	private double movieUserPopAvg;
+	private double movieUserPopSupport;
+	
+	public double getUserMoviePop(boolean avg) {
+		if (avg)
+			return userMoviePopAvg;
+		else
+			return userMoviePopSupport;
+	}
+
+	public void setUserMoviePop(double userMoviePop, boolean avg) {
+		if (avg)
+			this.userMoviePopAvg = userMoviePop;
+		else
+			this.userMoviePopSupport = userMoviePop;
+	}
+	
+	public double getMovieUserPop(boolean avg) {
+		if (avg)
+			return movieUserPopAvg;
+		else
+			return movieUserPopSupport;
+	}
+
+	public void setMovieUserPop(double movieUserPop, boolean avg) {
+		if (avg)
+			this.movieUserPopAvg = movieUserPop;
+		else
+			this.movieUserPopSupport = movieUserPop;
+	}
 	
 	public double getUserTimeDelay(boolean user) {
 		if (user)
